@@ -241,6 +241,24 @@ def set_due_date(task_ref: str, due_date: str, sheet_tab: str = "") -> dict:
     return {"task_ref": task_title, "due_date": due_date}
 
 
+def set_priority(task_ref: str, priority: str, sheet_tab: str = "") -> dict:
+    """Set or update the priority of a task."""
+    valid_priorities = ["high", "medium", "low"]
+    if priority.lower() not in valid_priorities:
+        raise ValueError(f"Invalid priority '{priority}'. Must be one of: {valid_priorities}")
+
+    sheet = _get_sheet(sheet_tab)
+    row_num = _find_row(sheet, task_ref)
+    if not row_num:
+        raise ValueError(f"Task not found: '{task_ref}'")
+
+    sheet.update_cell(row_num, COL_INDEX["E"], priority.lower())
+    sheet.update_cell(row_num, COL_INDEX["G"], _now())
+
+    task_title = sheet.cell(row_num, COL_INDEX["B"]).value
+    return {"task_ref": task_title, "priority": priority.lower()}
+
+
 def flag_task(task_ref: str, reason: str = "", sheet_tab: str = "") -> dict:
     """Mark a task as flagged/needing attention."""
     sheet = _get_sheet(sheet_tab)

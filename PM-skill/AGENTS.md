@@ -56,8 +56,19 @@ If someone mentions a new piece of work that doesn't exist in the sheet, call `c
 | `add_comment` | Context shared without a status change |
 | `list_tasks` | Someone asks what tasks exist or who owns what |
 | `set_due_date` | Deadline mentioned or changed |
+| `set_priority` | Priority mentioned or changed (high / medium / low) |
 | `flag_task` | Concern or escalation raised |
 | `get_sheet_summary` | Summary or overview requested |
+
+---
+
+### Priority mapping
+
+| What someone says | Priority to set |
+|---|---|
+| "high priority", "urgent", "critical", "top priority", "most important" | `high` |
+| "medium priority", "normal", "standard" | `medium` |
+| "low priority", "not urgent", "whenever", "backlog" | `low` |
 
 ---
 

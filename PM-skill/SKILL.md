@@ -43,6 +43,10 @@ Read tasks from the sheet. All filters optional.
 ### `set_due_date(task_ref, due_date)`
 Set or update a task's deadline.
 
+### `set_priority(task_ref, priority)`
+Set or update the priority of a task. Use when someone says "high priority", "urgent", "critical", "bump this up", "low priority", "backlog", etc.
+- `priority` — `high` / `medium` / `low`
+
 ### `flag_task(task_ref, reason)`
 Mark a task as needing attention. Turns the row bright red in the sheet.
 

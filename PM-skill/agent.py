@@ -22,7 +22,7 @@ import json
 from tools.sheets import (
     create_task, update_task_status, assign_task,
     add_comment, list_tasks, set_due_date,
-    flag_task, get_sheet_summary
+    set_priority, flag_task, get_sheet_summary
 )
 from tools.intent import parse_intent
 from tools.telegram import send_message
@@ -109,6 +109,14 @@ TOOLS = {
         "params": {
             "task_ref": "string — task title or ID",
             "due_date": "string — new due date"
+        }
+    },
+    "set_priority": {
+        "fn": lambda **kw: set_priority(**kw, sheet_tab=BOUND_SHEET_TAB),
+        "description": "Set or update the priority of an existing task",
+        "params": {
+            "task_ref": "string — task title or ID",
+            "priority": "string — high / medium / low"
         }
     },
     "flag_task": {
