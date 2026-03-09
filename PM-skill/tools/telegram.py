@@ -29,7 +29,7 @@ def send_message(chat_id: str | int, text: str, reply_to: int = None) -> dict:
 def send_summary(chat_id: str | int, summary: dict) -> dict:
     """Format and send a task summary message."""
     by_status = summary.get("by_status", {})
-
+    
     status_icons = {
         "done":        "✅",
         "on_track":    "🟢",

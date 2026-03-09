@@ -15,39 +15,44 @@ A dedicated AI agent that monitors a Telegram group and keeps a Google Sheet tas
 Telegram group message
         ↓
    OpenClaw gateway
-   (routes to agent session by group ID)
+   (routes to agent session by group ID — configured in openclaw.json)
         ↓
    AI agent (Claude via OpenClaw)
-   reads AGENTS.md + SKILL.md as instructions
+   reads AGENTS.md + skills/task-tracker/SKILL.md as instructions
         ↓
-   Runs Python tool via exec (tools/sheets.py)
+   Calls handle_message() in skills/task-tracker/agent.py
+        ↓
+   Runs Python tool via tools/sheets.py
    using Google Sheets API
         ↓
    Sheet row created/updated + colour coded
         ↓
-   (Optional) Reply sent back to group
+   Reply sent back to group (via tools/telegram.py)
 ```
 
-The AI layer is **OpenClaw** — it receives the Telegram message, runs the agent session, which reads the skill files and decides what to do. The Python tools handle only the Google Sheets interaction. The AI does the intent parsing; Claude (`claude-opus-4-5`) is called inside `tools/intent.py` for structured decisions.
+OpenClaw is the AI layer. It receives the Telegram message, runs the agent session, reads the skill files, and decides what to do. Python tools handle only the Google Sheets interaction. Intent parsing is in `tools/intent.py` which calls `claude-opus-4-5`.
 
 ---
 
 ## File structure
 
 ```
-skills/task-tracker/
-├── SKILL.md              ← Agent instructions (read by OpenClaw on every message)
-├── agent.py              ← Core logic: workspace binding, tool registry, message handler
-├── skill.json            ← Formal skill descriptor (env bindings, trigger filter)
-├── requirements.txt      ← Python deps
-├── tools/
-│   ├── __init__.py
-│   ├── sheets.py         ← All Google Sheets CRUD (create, update, list, flag, etc.)
-│   ├── intent.py         ← LLM intent parser (calls Claude, returns JSON action)
-│   └── telegram.py       ← Telegram send helpers (send_message, send_summary)
+pm-skill/                          ← workspace root
+├── AGENTS.md                      ← Agent operating instructions (read on every message)
+├── openclaw.json                  ← OpenClaw config: groupPolicy, trigger, group binding
+├── .env.example                   → copy to /home/ubuntu/.openclaw/.env
+└── skills/
+    └── task-tracker/
+        ├── SKILL.md               ← Skill instructions: tools, mappings, examples
+        ├── agent.py               ← Workspace binding, tool registry, message handler
+        ├── skill.json             ← Formal skill descriptor
+        ├── requirements.txt
+        └── tools/
+            ├── __init__.py
+            ├── sheets.py          ← All Google Sheets CRUD
+            ├── intent.py          ← LLM intent parser (returns JSON action decision)
+            └── telegram.py        ← send_message, send_summary
 ```
-
-**AGENTS.md** (workspace root) — the agent's operating instructions. This is what the AI reads first on every message. Keep it accurate.
 
 ---
 
@@ -61,40 +66,42 @@ Set in `/home/ubuntu/.openclaw/.env`:
 | `GOOGLE_SHEET_TAB` | Tab name inside the Google Sheet to write to (e.g. `Tasks`) |
 | `GOOGLE_SHEETS_ID` | Spreadsheet ID from the URL |
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | Full JSON of the Google service account key |
-| `ANTHROPIC_API_KEY` | Anthropic API key (used by intent.py for Claude calls) |
+| `ANTHROPIC_API_KEY` | Anthropic API key (used by intent.py) |
 | `TELEGRAM_BOT_TOKEN` | Bot token from @BotFather |
 
 The agent **refuses to start** if `TELEGRAM_ALLOWED_GROUP_ID` or `GOOGLE_SHEET_TAB` are missing.
 
 ---
 
-## Workspace binding (important)
-
-The agent is bound at startup to **one group** and **one sheet tab**. These never change at runtime:
-
-- `TELEGRAM_ALLOWED_GROUP_ID` is enforced at two levels: OpenClaw's trigger filter drops non-matching messages before the agent sees them, and `agent.py` checks again as defence-in-depth.
-- `GOOGLE_SHEET_TAB` is baked into every tool lambda in `agent.py` — it is never passed from user input.
-
-To run a second instance for a different group or sheet, deploy a second agent with different env vars.
-
----
-
 ## OpenClaw config (openclaw.json)
 
-The Telegram channel must have:
-
 ```json
-"groupPolicy": "open",
-"groups": {
-  "-5234910462": {
-    "requireMention": false
+{
+  "telegram": {
+    "groupPolicy": "open",
+    "groups": {
+      "${TELEGRAM_ALLOWED_GROUP_ID}": {
+        "requireMention": false
+      }
+    }
   }
 }
 ```
 
-- `groupPolicy: "open"` — allows all group members to trigger the agent (not just the owner). Required for the task tracker to work.
-- `requireMention: false` — agent reads ALL messages in the group, not just @mentions.
-- `groupAllowFrom` must **not** be set — if it is, only the listed sender IDs will get through and everyone else is silently dropped.
+- **`groupPolicy: "open"`** — allows ALL group members to trigger the agent. **This is required.** Without it, OpenClaw defaults to `groupAllowFrom:[<deployer_id>]` and silently drops every other sender's messages.
+- **`requireMention: false`** — agent reads ALL messages, not just @mentions.
+- **`groupAllowFrom` must NOT be set** — if present, only the listed sender IDs get through.
+
+---
+
+## Workspace binding
+
+The agent is bound at startup to **one group** and **one sheet tab**:
+
+- `TELEGRAM_ALLOWED_GROUP_ID` is enforced at two levels: OpenClaw's trigger filter drops non-matching groups first; `agent.py` checks again as defence-in-depth.
+- `GOOGLE_SHEET_TAB` is baked into every tool lambda in `agent.py` — never passed from user input.
+
+To run a second instance for a different group or sheet, deploy a second agent with different env vars.
 
 ---
 
@@ -117,12 +124,12 @@ The Telegram channel must have:
 | Status | Colour |
 |---|---|
 | `todo` | ⬜ Grey |
-| `in_progress` | 🔵 Blue |
-| `on_track` | 🟢 Green |
+| `in_progress` | 🔵 Light blue |
+| `on_track` | 🟢 Light green |
 | `off_track` | 🟡 Amber |
-| `blocked` | 🔴 Red |
+| `blocked` | 🔴 Light red |
 | `done` | ✅ Dark grey |
-| `cancelled` | ⛔ Pale |
+| `cancelled` | ⛔ Pale grey |
 | Flagged | 🚩 Bright red override |
 
 ---
@@ -142,23 +149,26 @@ print(json.dumps(get_sheet_summary(), indent=2))
 
 ---
 
-## How the intent pipeline works
+## Installing on a new agent
 
-1. OpenClaw routes the group message to the agent session
-2. The agent reads `SKILL.md` + `AGENTS.md` as instructions
-3. It calls `tools/intent.py` → `parse_intent()` which sends the message + current task list to Claude and gets back a JSON decision: `{ action, params, reply }`
-4. If action is set, the corresponding tool lambda in `agent.py` is called (with `sheet_tab` baked in)
-5. If reply is set, `tools/telegram.py` → `send_message()` sends it back to the group
+1. Copy `skills/task-tracker/` into the agent's workspace at the correct path
+2. Copy `AGENTS.md` and `openclaw.json` to the workspace root
+3. Set all required env vars in `/home/ubuntu/.openclaw/.env`
+4. Confirm `openclaw.json` has `groupPolicy: "open"` and `requireMention: false`
+5. Confirm `groupAllowFrom` is **not** set anywhere
+6. Share the Google Sheet with the service account email (Editor access)
+7. Restart the gateway: `openclaw gateway restart`
 
 ---
 
 ## Known gotchas
 
-- **`groupAllowFrom` blocks everyone else** — if set, only those sender IDs get processed. Remove it entirely for task tracker use.
-- **`sheet_tab` is never passed from user input** — it's always read from `GOOGLE_SHEET_TAB` env var. Don't add it to tool call params.
-- **The Google service account email must be shared** on the spreadsheet with Editor access, or all sheet writes will fail silently.
-- **`_find_row` uses fuzzy title matching** — "the landing page" will match a task titled "Landing Page Design". This is intentional but can cause false matches on very short task names.
-- **NO_REPLY leak** — OpenClaw should suppress the NO_REPLY token silently, but on older builds it may briefly flash in the group chat. Update to the latest OpenClaw build to fix this.
+- **`groupAllowFrom` blocks everyone else** — if set, only those sender IDs are processed. Remove it entirely.
+- **`groupPolicy` defaults to restricted** — always set `"open"` explicitly for group-chat skills.
+- **`sheet_tab` is never from user input** — always from `GOOGLE_SHEET_TAB` env var. Don't add it to tool call params.
+- **Service account must have Editor access** on the spreadsheet or all sheet writes fail silently.
+- **`_find_row` uses fuzzy title matching** — intentional, but very short task names can cause false matches.
+- **NO_REPLY leak** — on older OpenClaw builds the `NO_REPLY` token may flash briefly in chat. Update to the latest build.
 
 ---
 
@@ -166,16 +176,6 @@ print(json.dumps(get_sheet_summary(), indent=2))
 
 | Version | Changes |
 |---|---|
-| v1.0.0 | Initial skill — sheets.py, intent.py, basic agent.py |
-| v1.1.0 | Workspace binding model (env-driven, defence-in-depth group guard); added `tools/telegram.py` (was missing); `skill.json`; `in_progress` + `cancelled` statuses; `filter_priority`; row colour coding; `get_sheet_summary` with unassigned tracking |
-
----
-
-## Installing on a new agent
-
-1. Copy `skills/task-tracker/` into the new agent's workspace
-2. Set all required env vars in `.env`
-3. Set `groupPolicy: "open"` and `requireMention: false` for the target group in `openclaw.json`
-4. Ensure `groupAllowFrom` is **not** set (or remove it)
-5. Share the Google Sheet with the service account email
-6. Restart the OpenClaw gateway: `openclaw gateway restart`
+| v1.0.0 | Initial skill |
+| v1.1.0 | Workspace binding model; defence-in-depth group guard; `tools/telegram.py`; `skill.json`; extra statuses; row colour coding |
+| v1.2.0 | Restructured to correct OpenClaw file layout (`AGENTS.md`, `SKILL.md`, `openclaw.json`); `groupPolicy:open` + `requireMention:false` set explicitly to prevent sender-allowlist bug; removed `webhook_server.py` (OpenClaw handles routing); `DEV_CONTEXT.md` updated to match real architecture |

@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+
+  "agent": {
+    "name": "TaskBot",
+    "description": "Monitors one Telegram group and keeps a Google Sheet task tracker up to date. Reads every message, detects task-related content, and calls the right tool automatically.",
+    "instructions": "AGENTS.md",
+    "skill": "skills/task-tracker/SKILL.md"
+  },
+
+  "telegram": {
+    "groupPolicy": "open",
+    "comment_groupPolicy": "REQUIRED — allows ALL group members to trigger the agent. Without this, OpenClaw defaults to groupAllowFrom:[<deployer_id>] and silently drops everyone else's messages.",
+
+    "groups": {
+      "${TELEGRAM_ALLOWED_GROUP_ID}": {
+        "requireMention": false,
+        "comment_requireMention": "Agent reads ALL messages in the group, not just @mentions. Required for passive task monitoring."
+      }
+    },
+
+    "comment_groupAllowFrom": "DO NOT set groupAllowFrom here. If set, only those sender IDs will trigger the agent — everyone else is silently dropped. The group binding is handled by TELEGRAM_ALLOWED_GROUP_ID above."
+  }
+}
