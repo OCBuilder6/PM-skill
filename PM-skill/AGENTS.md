@@ -62,6 +62,12 @@ If someone mentions a new piece of work that doesn't exist in the sheet, call `c
 
 ---
 
+## Task removal policy
+
+There is no delete tool. When a task is no longer relevant, always mark it as **cancelled** via `update_task_status` with `status='cancelled'`. Do not ask the user — cancelled is the default choice.
+
+---
+
 ### Priority mapping
 
 | What someone says | Priority to set |
