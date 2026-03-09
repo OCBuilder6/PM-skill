@@ -1,0 +1,116 @@
+{
+  "agent": {
+    "name": "TaskBot",
+    "persona": "A dedicated project coordination agent. Its entire purpose is to watch a single Telegram group and keep one Google Sheet tab up to date. It has no other duties and does not respond to messages unrelated to tasks.",
+    "workspace": {
+      "binding": "exclusive",
+      "description": "This agent owns one Telegram group and one sheet tab. Both are set at deploy time and never change at runtime. The agent must refuse to act on any message from outside its bound group, and must always write to its bound sheet tab — never to any other.",
+      "bound_group":     { "env": "TELEGRAM_ALLOWED_GROUP_ID",  "type": "telegram_chat_id" },
+      "bound_sheet_tab": { "env": "GOOGLE_SHEET_TAB",           "type": "google_sheet_tab_name" }
+    }
+  },
+
+  "skill": {
+    "name": "telegram-task-manager",
+    "version": "1.1.0",
+    "description": "Monitors one Telegram group and syncs task updates to one Google Sheet tab in real time. Natural language in → structured sheet updates out.",
+    "entry": "agent.py",
+    "trigger": {
+      "type": "telegram_message",
+      "filter": {
+        "chat_id": { "env": "TELEGRAM_ALLOWED_GROUP_ID" },
+        "enforce": "hard",
+        "on_violation": "drop_and_log"
+      }
+    }
+  },
+
+  "tools": [
+    {
+      "name": "create_task",
+      "description": "Add a new task row to the bound sheet tab",
+      "writes_to": "bound_sheet_tab"
+    },
+    {
+      "name": "update_task_status",
+      "description": "Change a task's status (todo / in_progress / on_track / off_track / blocked / done / cancelled)",
+      "writes_to": "bound_sheet_tab"
+    },
+    {
+      "name": "assign_task",
+      "description": "Set or change who owns a task",
+      "writes_to": "bound_sheet_tab"
+    },
+    {
+      "name": "add_comment",
+      "description": "Append a timestamped note to a task without changing its status",
+      "writes_to": "bound_sheet_tab"
+    },
+    {
+      "name": "list_tasks",
+      "description": "Read tasks from the bound sheet tab, with optional filters",
+      "reads_from": "bound_sheet_tab"
+    },
+    {
+      "name": "set_due_date",
+      "description": "Set or update a task's deadline",
+      "writes_to": "bound_sheet_tab"
+    },
+    {
+      "name": "flag_task",
+      "description": "Mark a task as needing attention / escalated",
+      "writes_to": "bound_sheet_tab"
+    },
+    {
+      "name": "get_sheet_summary",
+      "description": "Return counts by status, overdue items, and flagged tasks from the bound sheet tab",
+      "reads_from": "bound_sheet_tab"
+    }
+  ],
+
+  "env_required": [
+    {
+      "key": "TELEGRAM_ALLOWED_GROUP_ID",
+      "description": "The Telegram group chat ID this agent is bound to. Only messages from this chat are processed.",
+      "example": "-1001234567890"
+    },
+    {
+      "key": "GOOGLE_SHEET_TAB",
+      "description": "The exact tab name inside the Google Sheet this agent writes to. Created automatically if it does not exist.",
+      "example": "Tasks"
+    },
+    {
+      "key": "TELEGRAM_BOT_TOKEN",
+      "description": "Bot token from @BotFather",
+      "example": "123456:ABC-DEF..."
+    },
+    {
+      "key": "GOOGLE_SHEETS_ID",
+      "description": "Spreadsheet ID from the Google Sheets URL",
+      "example": "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"
+    },
+    {
+      "key": "GOOGLE_SERVICE_ACCOUNT_JSON",
+      "description": "Full JSON of a Google service account key with Sheets + Drive access.",
+      "example": "{\"type\":\"service_account\", ...}"
+    },
+    {
+      "key": "ANTHROPIC_API_KEY",
+      "description": "Anthropic API key for the intent-parsing LLM call",
+      "example": "sk-ant-..."
+    }
+  ],
+
+  "env_optional": [
+    {
+      "key": "TELEGRAM_WEBHOOK_SECRET",
+      "description": "Secret token to validate that webhook requests genuinely come from Telegram",
+      "default": ""
+    },
+    {
+      "key": "PORT",
+      "description": "Port the webhook server listens on",
+      "default": "8000"
+    }
+  ]
+}
