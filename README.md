@@ -57,7 +57,7 @@ PM-skill/
 
 ## Required environment variables
 
-Set in `/home/ubuntu/.openclaw/.env` (see `.env.example`):
+Set in your `~/.openclaw/.env` (see `.env.example` for a full template):
 
 | Variable | What it is |
 |---|---|
@@ -135,13 +135,13 @@ To run a second instance for a different group or sheet, deploy a second agent w
 
 ---
 
-## Installing on a new agent
+## Installing
 
-1. Copy `PM-skill/` contents into the agent's workspace
-2. Copy `.env.example` to `/home/ubuntu/.openclaw/.env` and fill in values
-3. Merge `openclaw.json` settings into your existing OpenClaw config
+1. Clone this repo and copy the `PM-skill/` folder into your OpenClaw workspace
+2. Copy `.env.example` → `~/.openclaw/.env` and fill in your values
+3. Merge `openclaw.json` settings into your `~/.openclaw/openclaw.json`
 4. Confirm `groupPolicy: "open"` and `requireMention: false` for your group
-5. Confirm `groupAllowFrom` is **not** set anywhere
+5. Confirm `groupAllowFrom` is **not** set (it silently blocks all other senders)
 6. Share the Google Sheet with the service account email (Editor access)
 7. Restart the gateway: `openclaw gateway restart`
 
@@ -150,10 +150,10 @@ To run a second instance for a different group or sheet, deploy a second agent w
 ## Running tools manually
 
 ```bash
-cd /path/to/PM-skill && \
-  export $(grep -E 'GOOGLE_|TELEGRAM_ALLOWED_GROUP_ID|GOOGLE_SHEET_TAB' ~/.openclaw/.env | xargs -d '\n') && \
+cd PM-skill && \
+  set -a && source ~/.openclaw/.env && set +a && \
   python3 -c "
-import sys, json, os
+import sys, json
 sys.path.insert(0, '.')
 from tools.sheets import get_sheet_summary
 print(json.dumps(get_sheet_summary(), indent=2))

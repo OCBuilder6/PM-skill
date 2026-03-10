@@ -45,7 +45,7 @@ if not BOUND_GROUP_ID or not BOUND_SHEET_TAB:
     print("\n[TaskBot] ❌ Cannot start — workspace binding incomplete.\n")
     for m in missing:
         print(m)
-    print("\nSet these in /home/ubuntu/.openclaw/.env then restart the gateway.\n")
+    print("\nSet these in your .openclaw/.env then restart the gateway.\n")
     sys.exit(1)
 
 print(f"[TaskBot] ✅ Bound group : {BOUND_GROUP_ID}")
