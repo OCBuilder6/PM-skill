@@ -44,8 +44,13 @@ Read tasks from the sheet. All filters optional.
 Set or update a task's deadline.
 
 ### `set_priority(task_ref, priority)`
-Set or update the priority of a task. Use when someone says "high priority", "urgent", "critical", "bump this up", "low priority", "backlog", etc.
+Set or update the priority of a task (column E). Use when someone says "high priority", "urgent", "critical", "bump this up", "low priority", "backlog", etc.
 - `priority` — `high` / `medium` / `low`
+
+```python
+from tools.sheets import set_priority
+result = set_priority(task_ref="T007", priority="high")
+```
 
 ### `flag_task(task_ref, reason)`
 Mark a task as needing attention. Turns the row bright red in the sheet.
@@ -93,6 +98,9 @@ Return total count, counts by status, overdue tasks, and flagged tasks.
 | "Add a task: write Q3 comms plan, owner Sarah, due 30th" | `create_task(title="Q3 comms plan", owner="Sarah", due_date="2025-01-30")` |
 | "Can you assign the DB migration to Marcus?" | `assign_task(task_ref="DB migration", owner="Marcus")` |
 | "The launch plan is on track for Friday" | `update_task_status(task_ref="launch plan", status="on_track")` |
+| "T007 is high priority" | `set_priority(task_ref="T007", priority="high")` |
+| "The marketplace redesign is low priority" | `set_priority(task_ref="marketplace redesign", priority="low")` |
+| "This is urgent" | `set_priority(task_ref="<inferred task>", priority="high")` |
 | "What's everyone working on?" | `list_tasks()` |
 | "Give me a summary" | `get_sheet_summary()` |
 | "Lunch at 1pm anyone?" | `NO_REPLY` |
