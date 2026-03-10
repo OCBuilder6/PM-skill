@@ -119,9 +119,12 @@ def _find_row(sheet, task_ref: str) -> Optional[int]:
 
 
 def _set_row_color(sheet, row_num: int, status: str):
-    """Color the entire row based on status."""
+    """Color the entire row based on status, then restore priority colour on E."""
     color = STATUS_COLORS.get(status, STATUS_COLORS["todo"])
     sheet.format(f"A{row_num}:I{row_num}", {"backgroundColor": color})
+    # Re-apply priority colour — row format overwrites column E
+    priority = sheet.cell(row_num, COL_INDEX["E"]).value or "medium"
+    _set_priority_color(sheet, row_num, priority)
 
 
 def _set_priority_color(sheet, row_num: int, priority: str):
