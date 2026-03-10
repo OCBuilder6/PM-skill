@@ -74,6 +74,14 @@ Return total count, counts by status, overdue tasks, and flagged tasks.
 | H | Comments | Appended updates |
 | I | Flagged | 🚩 Escalation notes |
 
+### Priority cell colours (column E)
+
+| Priority | Colour |
+|---|---|
+| `high` | 🔴 Red |
+| `medium` | 🟠 Amber |
+| `low` | 🟢 Light green |
+
 ### Row colours by status
 
 | Status | Colour |

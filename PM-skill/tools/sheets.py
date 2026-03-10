@@ -35,6 +35,12 @@ SHEET_COLUMNS = {
 
 COL_INDEX = {v: i+1 for i, (k, v) in enumerate(SHEET_COLUMNS.items())}
 
+PRIORITY_COLORS = {
+    "high":   {"red": 1.0,  "green": 0.6,  "blue": 0.6},   # red
+    "medium": {"red": 1.0,  "green": 0.9,  "blue": 0.6},   # amber/orange
+    "low":    {"red": 0.85, "green": 0.92, "blue": 0.85},   # light green
+}
+
 STATUS_COLORS = {
     "todo":        {"red": 0.9,  "green": 0.9,  "blue": 0.9},   # light grey
     "in_progress": {"red": 0.8,  "green": 0.9,  "blue": 1.0},   # light blue
@@ -118,6 +124,12 @@ def _set_row_color(sheet, row_num: int, status: str):
     sheet.format(f"A{row_num}:I{row_num}", {"backgroundColor": color})
 
 
+def _set_priority_color(sheet, row_num: int, priority: str):
+    """Color the priority cell (column E) based on priority level."""
+    color = PRIORITY_COLORS.get(priority.lower(), PRIORITY_COLORS["medium"])
+    sheet.format(f"E{row_num}", {"backgroundColor": color})
+
+
 def _now() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M")
 
@@ -137,6 +149,7 @@ def create_task(title: str, owner: str = "Unassigned", due_date: str = "",
     # Find the row we just added and color it
     row_num = len(sheet.get_all_values())
     _set_row_color(sheet, row_num, "todo")
+    _set_priority_color(sheet, row_num, priority)
 
     return {"task_id": task_id, "title": title, "owner": owner}
 
@@ -254,6 +267,7 @@ def set_priority(task_ref: str, priority: str, sheet_tab: str = "") -> dict:
 
     sheet.update_cell(row_num, COL_INDEX["E"], priority.lower())
     sheet.update_cell(row_num, COL_INDEX["G"], _now())
+    _set_priority_color(sheet, row_num, priority)
 
     task_title = sheet.cell(row_num, COL_INDEX["B"]).value
     return {"task_ref": task_title, "priority": priority.lower()}
