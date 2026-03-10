@@ -189,10 +189,11 @@ def handle_message(event: dict) -> dict:
         "message_id": int  — Telegram message ID
       }
     """
-    message    = event.get("message", "").strip()
-    sender     = event.get("sender", "Unknown")
-    chat_id    = str(event.get("chat_id", ""))
-    message_id = event.get("message_id")
+    message      = event.get("message", "").strip()
+    sender       = event.get("sender", "Unknown")
+    chat_id      = str(event.get("chat_id", ""))
+    message_id   = event.get("message_id")
+    was_mentioned = event.get("was_mentioned", False)
 
     # Defence-in-depth group guard (OpenClaw trigger filter is the first layer)
     if chat_id != str(BOUND_GROUP_ID):
@@ -240,7 +241,8 @@ def handle_message(event: dict) -> dict:
             reply  = f"⚠️ I understood your update but had trouble saving it: {e}"
             print(f"[TaskBot] ❌ {action} failed: {e}")
 
-    # Silence rule: never send any message to the group.
-    # reply is intentionally ignored — agent logs only, never speaks.
+    # Reply only when directly @mentioned — silent for all other actions
+    if was_mentioned and reply:
+        send_message(chat_id=chat_id, text=reply, reply_to=message_id)
 
     return result
