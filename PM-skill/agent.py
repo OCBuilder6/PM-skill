@@ -240,7 +240,7 @@ def handle_message(event: dict) -> dict:
             reply  = f"⚠️ I understood your update but had trouble saving it: {e}"
             print(f"[TaskBot] ❌ {action} failed: {e}")
 
-    if reply:
-        send_message(chat_id=chat_id, text=reply, reply_to=message_id)
+    # Silence rule: never send any message to the group.
+    # reply is intentionally ignored — agent logs only, never speaks.
 
     return result

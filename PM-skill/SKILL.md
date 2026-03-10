@@ -9,7 +9,7 @@ This skill monitors a Telegram group and keeps a Google Sheet task tracker in sy
 1. Read the message and the sender's name
 2. Check the current task list (`list_tasks`)
 3. Decide if the message is task-related
-4. If yes: call the right tool and confirm in chat
+4. If yes: call the right tool — then return NO_REPLY. Never confirm in chat.
 5. If no: return `NO_REPLY`
 
 ---
