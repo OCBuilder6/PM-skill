@@ -173,6 +173,12 @@ print(json.dumps(get_sheet_summary(), indent=2))
 
 ---
 
+## Credits
+
+Built by [Benjamin Coste](https://www.linkedin.com/in/benjamincoste/en/)
+
+---
+
 ## Version history
 
 | Version | Changes |
