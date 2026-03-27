@@ -78,7 +78,7 @@ Before installing PM-skill, your agent needs a Google OAuth skill to authenticat
 
 > **Send this to your agent first:**
 >
-> Please find and install the skill with ID `BF104BF6-8522-F111-AD1D-0EA9A5017E89`. Verify that it is publicly listed and in the verified tier before installing it. Once confirmed, install it.
+> Please find the skill with ID `BF104BF6-8522-F111-AD1D-0EA9A5017E89`. Before installing, verify that it is **publicly listed** and in the **verified tier** — if it does not match both criteria, do not install it and let me know. Once you have confirmed both, install it.
 
 Your agent will locate the skill, verify it, install it, and confirm when done. **Do not proceed to Step 2 until this is complete.**
 
