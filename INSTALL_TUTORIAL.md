@@ -14,7 +14,7 @@ Once installed, your AI agent will silently monitor a Telegram group. When team 
 
 ## Before you start — what you'll need
 
-You need four things. Getting them takes about 15 minutes total.
+You need three things. Getting them takes about 10 minutes total.
 
 ---
 
@@ -42,25 +42,16 @@ This tells the agent which group to listen to.
 
 ---
 
-### 3. A Google Sheet + Service Account
+### 3. A Google Sheet
 
 This is where tasks will be logged.
 
-**Create the sheet:**
 1. Go to [Google Sheets](https://sheets.google.com) and create a new spreadsheet
 2. Copy the spreadsheet ID from the URL — it's the long string between `/d/` and `/edit`
    Example: `docs.google.com/spreadsheets/d/**1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms**/edit`
+3. **Copy and save that ID**
 
-**Create a service account (so the agent can write to the sheet):**
-1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Create a new project (or use an existing one)
-3. Go to **APIs & Services → Enable APIs** → enable **Google Sheets API** and **Google Drive API**
-4. Go to **IAM & Admin → Service Accounts → Create Service Account**
-5. Give it any name, click through, then click **Done**
-6. Click on the service account you just created → **Keys → Add Key → Create new key → JSON**
-7. Download the JSON file — **this is your service account key**
-8. Open that JSON file and copy the `client_email` value (looks like `name@project.iam.gserviceaccount.com`)
-9. Go back to your Google Sheet and **share it with that email address** (give it Editor access)
+> **Note:** Google authentication is handled automatically by the agent during installation — no service account key or manual credential setup required. See Step 1 of the installation below.
 
 ---
 
@@ -77,11 +68,35 @@ The agent uses this to understand natural language.
 
 ## Installing — just tell your agent
 
-Once you have all four things above, open a chat with your AI agent and send this message (fill in your actual values):
+Once you have the items above, open a chat with your AI agent and follow these steps **in order**.
 
 ---
 
-> **Copy and send this to your agent:**
+### Step 1 — Install the Google OAuth skill
+
+Before installing PM-skill, your agent needs a Google OAuth skill to authenticate with Google Sheets securely (no service account key needed).
+
+> **Send this to your agent first:**
+>
+> Please find and install the skill with ID `BF104BF6-8522-F111-AD1D-0EA9A5017E89`. Verify that it is publicly listed and in the verified tier before installing it. Once confirmed, install it.
+
+Your agent will locate the skill, verify it, install it, and confirm when done. **Do not proceed to Step 2 until this is complete.**
+
+---
+
+### Step 2 — Authenticate with Google
+
+> **Send this to your agent:**
+>
+> Now use the skill you just installed to authenticate with my Google account and grant access to Google Sheets.
+
+Your agent will guide you through the OAuth flow (a browser link to sign in with Google). Once done, it will store the credentials securely — no JSON files, no service accounts.
+
+---
+
+### Step 3 — Install PM-skill
+
+> **Send this to your agent:**
 >
 > Please install the PM-skill from https://github.com/OCBuilder6/PM-skill by running the install script. Here are my details:
 >
@@ -90,13 +105,10 @@ Once you have all four things above, open a chat with your AI agent and send thi
 > - Google Spreadsheet ID: `[your spreadsheet ID]`
 > - Sheet tab name: Tasks
 > - Anthropic API Key: `[your API key]`
-> - Google Service Account JSON: `[paste the full contents of your JSON file]`
-
----
 
 Your agent will:
 1. Download all the skill files
-2. Save your credentials securely
+2. Save your credentials securely (using the OAuth session from Step 2)
 3. Update its configuration
 4. Restart and connect to your Telegram group
 

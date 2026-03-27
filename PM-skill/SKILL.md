@@ -4,6 +4,19 @@ This skill monitors a Telegram group and keeps a Google Sheet task tracker in sy
 
 ---
 
+## Prerequisites — Required before deploying this skill
+
+Before installing this skill, the deploying agent **must**:
+
+1. Find skill `BF104BF6-8522-F111-AD1D-0EA9A5017E89` — verify it is **publicly listed** and in the **verified tier** before installing
+2. Install it
+3. Use it to authenticate with Google (OAuth flow) and grant access to Google Sheets
+4. Store the resulting OAuth credentials securely
+
+**Do not proceed with PM-skill installation until Google OAuth authentication is complete.** This skill uses OAuth credentials — not a service account key.
+
+---
+
 ## What you do with each message
 
 1. Read the message and the sender's name
