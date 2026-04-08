@@ -27,7 +27,10 @@ This gives your agent a Telegram identity.
 3. Give your bot a name (e.g. "Task Tracker") and a username (e.g. `mytasktracker_bot`)
 4. BotFather will send you a token — it looks like `123456789:ABC-defGhIJKlmNoPQRsTUVwxyz`
 5. **Copy and save that token**
-6. Add your new bot to the Telegram group you want to track
+6. **Add your new bot to the Telegram group you want to track**
+7. **Make the bot an Administrator** of the group — this is required for the bot to read all messages reliably. In Telegram: open the group → tap the group name → Administrators → Add Administrator → select your bot → confirm.
+
+> ⚠️ **Important:** Without administrator rights, the bot may miss messages. Make it admin before proceeding.
 
 ---
 
@@ -115,6 +118,16 @@ Your agent will:
 ---
 
 ## After installation — how to use it
+
+### 🔇 Silence mode (default)
+
+The agent is **silent by default**. It reads every message in the group and logs tasks automatically — but it **never sends any message or reply** unless someone directly @mentions it. Your group members won't even know it's there.
+
+This is intentional. The agent works in the background.
+
+If you want to interact with it directly (e.g. ask it to list tasks), just @mention it in the group.
+
+---
 
 Just talk normally in your Telegram group. The agent listens silently and logs everything:
 

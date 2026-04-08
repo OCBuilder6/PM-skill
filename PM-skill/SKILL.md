@@ -15,6 +15,21 @@ Before installing this skill, the deploying agent **must**:
 
 **Do not proceed with PM-skill installation until Google OAuth authentication is complete.** This skill uses OAuth credentials — not a service account key.
 
+Also ensure **before completing installation**:
+- The bot has been **added to the Telegram group**
+- The bot has been made **Administrator** of the group (required to read all messages reliably)
+- Prompt the user to confirm both before finalising setup
+
+---
+
+## Silence mode — default behaviour
+
+**The agent is silent by default.** It must never send any message or reply in the group on its own initiative. All actions (task logging, updates, priority changes) happen invisibly in the background.
+
+The agent may only reply in the group when **directly @mentioned** by a user.
+
+This rule is absolute — do not greet, confirm, or acknowledge messages in the group.
+
 ---
 
 ## What you do with each message
